@@ -1,0 +1,246 @@
+﻿<!DOCTYPE html>
+<html lang="de">
+	<head>
+		<title>pumping heartbeat</title>
+		
+		<meta charset="utf-8">
+		<meta name="author" content="Martin Wantke">
+		<meta name="version" content="1.0">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+		
+		<style>
+			html, body
+			{
+				height: 100%;
+			}
+			
+			body
+			{
+				margin: 0;
+				overflow: hidden;
+				box-sizing: border-box;
+			}
+			
+			
+			#heart
+			{
+				animation: heartbeat 2.4s infinite linear;
+			}
+			
+			@keyframes heartbeat
+			{
+				0%
+				{
+					animation-timing-function: cubic-bezier(0.3, 0.0, 1, 0.4);
+					transform: scale(1);
+				}
+
+				50%
+				{
+					animation-timing-function: cubic-bezier(0.0, 0.5, 0.4, 1.0);
+					transform: scale(1.5);
+				}
+
+				100%
+				{
+					transform: scale(1);
+				}
+			}
+			
+			
+			.background
+			{
+				background-color: rgb(196, 94, 36);
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				height: 100%; width: 100%;
+			}
+			
+			#panel
+			{
+				width: 768px; height: 768px;
+				margin-left: -384px; margin-top: -384px;
+				 
+				box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.6), 0px 0px 7px -3px rgba(0, 0, 0, 1), 0px 0px 3px -1px rgba(0, 0, 0, 1);
+				background-color: white;
+			}
+			
+			#textDiv
+			{
+				width: 1280px;
+				margin-left: -640px;
+				
+				font-size: 32px;
+				font-family: "Courier New", Courier, monospace;
+				font-weight: bold;
+				
+				color: rgb(138, 50, 0);
+				text-shadow: -1px -1.5px 0px rgb(220, 125, 71), 0px 2px 2px rgb(64, 24, 0);
+				text-align: justify;
+			}
+			
+			.dot
+			{
+				width: 0px;
+				height: 0px;
+			}
+		</style>
+		
+		<script>
+			if(!window.requestAnimationFrame || typeof(window.requestAnimationFrame) == "function") { window.requestAnimationFrame = function(frame) { if(!frame || frame.constructor != Function) { return; } setTimeout(frame, 12); }; }
+		</script>
+		
+		<script>
+			function supportES6()
+			{
+				try
+				{
+					Function("() => {};"); return true;
+				}
+				catch(exception)
+				{
+					return false;
+				}
+			}
+			
+			if(!supportES6())
+			{
+				alert("It seems as if your browser does not support ECMAScript 6. Please try to update or change your browser.");
+			}
+		</script>
+		
+		<script>
+			function buildBackgroundText(heart)
+			{
+				let style = getComputedStyle(heart);
+				let transform = style.transform;
+				
+				if(!transform || transform.constructor != String || !transform.startsWith('matrix')) { return ""; }
+				
+				let value = transform.replace('matrix', '').replace('(', '').replace(')', '');
+				let items = value.split(",").map(item => item.trim());
+				
+				let scale = parseFloat(items[0]);
+				if(!Number.isFinite(scale) || scale < 0) { return; }
+				
+				
+				scale *= 1.5;
+				
+				let origin = [heart.width.baseVal.value / 2, heart.height.baseVal.value / 2];
+				let unit = 4;
+				
+				
+				let scaleX = unit * 1.1 * scale;
+				let scaleY = unit * scale;
+				
+				let originX = origin[0];
+				let originY = origin[1];
+				
+				
+				let p = new Array(13);
+				
+				p[0] = [originX + (0) * scaleX, originY + (-35) * scaleY];
+				p[1] = [originX + (12.5) * scaleX, originY + (-47.5) * scaleY];
+				p[2] = [originX + (27.5) * scaleX, originY + (-47.5) * scaleY];
+				p[3] = [originX + (36) * scaleX, originY + (-39) * scaleY];
+				p[4] = [originX + (42) * scaleX, originY + (-33) * scaleY];
+				p[5] = [originX + (60) * scaleX, originY + (-10) * scaleY];
+				p[6] = [originX + (0) * scaleX, originY + (45) * scaleY];
+				
+				p[7] = [-(p[5][0] - originX) + originX, p[5][1]];
+				p[8] = [-(p[4][0] - originX) + originX, p[4][1]];
+				p[9] = [-(p[3][0] - originX) + originX, p[3][1]];
+				p[10] = [-(p[2][0] - originX) + originX, p[2][1]];
+				p[11] = [-(p[1][0] - originX) + originX, p[1][1]];
+				p[12] = [-(p[0][0] - originX) + originX, p[0][1]];
+				
+				p = p.map(item => [item[0].toFixed(2), item[1].toFixed(2)]);
+				
+				let _text = '<svg id="heart" width="' + heart.width.baseVal.value + 'px" height="' + heart.height.baseVal.value + 'px" style="margin-left: -' + (heart.width.baseVal.value / 2) + 'px; margin-top: -' + (heart.height.baseVal.value / 2) + 'px;"><path d="' + ("M" + p[0][0] + " " + p[0][1] + " C" + p[1][0] + " " + p[1][1] + ", " + p[2][0] + " " + p[2][1] + ", " + p[3][0] + " " + p[3][1] + " C" + p[4][0] + " " + p[4][1] + ", " + p[5][0] + " " + p[5][1] + ", " + p[6][0] + " " + p[6][1] + " C" + p[7][0] + " " + p[7][1] + ", " + p[8][0] + " " + p[8][1] + ", " + p[9][0] + " " + p[9][1] + " C" + p[10][0] + " " + p[10][1] + ", " + p[11][0] + " " + p[11][1] + ", " + p[12][0] + " " + p[12][1] + " Z") + '" stroke="rgb(0, 0, 0)" fill="red" stroke-width="12px" stroke-gab="round" stroke-join="round"><\/path><\/svg>';
+				return _text;
+			};
+		
+			document.addEventListener("DOMContentLoaded", event =>
+			{
+				let heart = document.querySelector('#heart');
+				let textDiv = document.querySelector('#textDiv');
+				
+				function frame()
+				{
+					let _text = buildBackgroundText(heart);
+					
+					textDiv.innerText = _text;
+					textDiv.style.marginTop = (-textDiv.clientHeight / 4) + "px";
+					requestAnimationFrame(frame);
+				}
+				frame();
+			});
+			
+			window.addEventListener("load", event =>
+			{
+				let textDiv = document.querySelector('#textDiv');
+				let panel = document.querySelector('#panel');
+				let heart = document.querySelector('#heart');
+				
+				
+				heart.viewBox = "0 0 1152 1152";
+				heart.setAttributeNS(null, "viewBox", "0 0  1152 1152");
+				
+				function adjustSize()
+				{
+					let expectedWindowHeight = 896;
+					
+					let deviceWidth = window.innerWidth === undefined ? window.screen.width : window.innerWidth;
+					let deviceHeight = window.innerHeight === undefined ? window.screen.height : window.innerHeight;
+					
+					let size = deviceWidth < deviceHeight ? deviceWidth : deviceHeight;
+					
+					let proportion = size / expectedWindowHeight;
+				
+					let textDivSize = 1280 * proportion;
+					let panelSize = 768 * proportion;
+					let heartSize = 1152 * proportion;
+					
+					let textDivFontSize = 32 * proportion;
+				
+					textDiv.style.width = textDivSize + "px"; textDiv.style.marginLeft = "-" + (textDivSize / 2) + "px";
+					textDiv.style.marginTop = (-textDiv.clientHeight / 4) + "px";
+					textDiv.style.fontSize = textDivFontSize + "px";
+					
+					panel.style.width = panelSize + "px"; panel.style.height = panelSize + "px";
+					panel.style.marginLeft = "-" + (panelSize / 2) + "px"; panel.style.marginTop = "-" + (panelSize / 2) + "px";
+					
+					heart.style.width = heartSize + "px"; heart.style.height = heartSize + "px";
+					heart.style.marginLeft = "-" + (heartSize / 2) + "px"; heart.style.marginTop = "-" + (heartSize / 2) + "px";
+				}
+				adjustSize();
+				window.addEventListener("resize", event => { adjustSize(); });
+			});
+		</script>
+		
+		<script>
+			function supportsAnimation()
+			{
+				return "animation" in document.createElement("div").style;
+			};
+			
+			if(!supportsAnimation()) { alert("Sorry •:3. Your browser does not support animation keyframes •:3 •:3."); }
+		</script>
+	</head>
+	<body>
+		<div class="background">
+			<div class="dot">
+				<div id="textDiv"></div>
+			</div>
+			<div class="dot">
+				<div id="panel"></div>
+			</div>
+			<div class="dot">
+				<svg id="heart" width="1152" height="1152" style="margin-left: -576px; margin-top: -576px;">
+					<path d="M576 366 C658.5 291, 757.5 291, 813.6 342 C853.2 378, 972 516, 576 846 C180 516, 298.8 378, 338.4 342 C394.5 291, 493.5 291, 576 366 Z" stroke="rgb(0, 0, 0)" fill="red" stroke-width="12px" stroke-gab="round" stroke-join="round"></path>
+				</svg>
+			</div>
+		</div>
+	</body>
+</html>
